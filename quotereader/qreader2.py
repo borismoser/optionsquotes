@@ -124,3 +124,5 @@ with open('quotes.txt', 'w') as f:
             lin = lin + '|'.join(f'{str(item)}'.center(12) for item in x[1:])
             f.write(lin + '\n')
         f.write('\n')
+
+# test
