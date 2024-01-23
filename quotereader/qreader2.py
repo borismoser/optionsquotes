@@ -97,7 +97,7 @@ with open('quotes.txt', 'w') as f:
         options = assets.get(asset)
         options.sort(key=lambda o: getattr(o, 'sortkey'))
         for op in options:
-            item = f'{op.symbol:5} {op.last:5.2f}'
+            item = f'{op.symbol:6} {op.last:5.2f}'
             for r in tabela:
                 if r[0] == op.strike:
                     if op.expiration in header:
@@ -111,9 +111,9 @@ with open('quotes.txt', 'w') as f:
 
         # OUTPUT
         param = params.get(asset)
-        lin = f'{asset:>6}: {param.last_quote:.2f} ({param.variation:.2f}%)'
+        lin = f'{asset:>6} : {param.last_quote:.2f} ({param.variation:.2f}%)'
         f.write(lin + '\n\n')
-        lin = header[0] + ' |' + '|'.join(f'{str(item)}'.center(12) for item in header[1:])
+        lin = header[0] + ' |' + '|'.join(f'{str(item)}'.center(14) for item in header[1:])
         f.write(lin + '\n')
         indicador = False
         for x in tabela:
@@ -121,7 +121,7 @@ with open('quotes.txt', 'w') as f:
                 f.write('........\n')
                 indicador = True
             lin = f'{x[0]:6.2f} |'
-            lin = lin + '|'.join(f'{str(item)}'.center(12) for item in x[1:])
+            lin = lin + '|'.join(f'{str(item)}'.center(14) for item in x[1:])
             f.write(lin + '\n')
         f.write('\n')
 
