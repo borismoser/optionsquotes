@@ -47,7 +47,7 @@ for parm in params.itertuples():
 #         f.write('\n\n\n')
 
 with open('series_cotacoes.txt', 'w') as f:
-    f.write(f'Arquivo gerado em {datetime.now()}\n\n')
+    f.write(f'Arquivo gerado em {datetime.date(datetime.now())} às {datetime.time(datetime.now())}\n\n')
     for asset in tabs.keys():
         tabela = tabs[asset]
         # Código do ativo, última cotação e variação
