@@ -1,28 +1,34 @@
 import pandas as pd
 
-SHOW_LAST_QUOTE_ZERO = False
-
 with pd.ExcelFile('series_autorizadas_cotacoes.xlsx') as xlsx:
     quotes = pd.read_excel(xlsx, 'Select')
     params = pd.read_excel(xlsx, 'Params')
 
+quotes = quotes[quotes.Last > 0]
 quotes['colHead'] = quotes.XprtnDt.astype(str) + ' ' + quotes.OptnTp.str[0]
 
+last_quote_asset = {}
 tabs = {}
 for parm in params.itertuples():
-    vencimentos = sorted(quotes.colHead[(quotes.Asst == parm.Asset) & (quotes.ExrcPric >= parm.FromStrike) & (
-            quotes.ExrcPric <= parm.ToStrike) & (quotes.XprtnDt >= parm.FromDate) & (
-                                                quotes.XprtnDt <= parm.ToDate)].unique())
-    strikes = sorted(quotes.ExrcPric[(quotes.Asst == parm.Asset) & (quotes.ExrcPric >= parm.FromStrike) & (
-            quotes.ExrcPric <= parm.ToStrike) & (quotes.XprtnDt >= parm.FromDate) & (
-                                             quotes.XprtnDt <= parm.ToDate)].unique())
+    last_quote_asset[parm.Asset] = (parm.Last, parm.Var)
+    df = quotes[(quotes.Asst == parm.Asset) & (quotes.ExrcPric >= parm.FromStrike) & (
+            quotes.ExrcPric <= parm.ToStrike) & (quotes.XprtnDt >= parm.FromDate) & (quotes.XprtnDt <= parm.ToDate)]
+    vencimentos = sorted(df.colHead.unique())
+    strikes = sorted(df.ExrcPric.unique())
+    # vencimentos = sorted(quotes.colHead[(quotes.Asst == parm.Asset) & (quotes.ExrcPric >= parm.FromStrike) & (
+    #         quotes.ExrcPric <= parm.ToStrike) & (quotes.XprtnDt >= parm.FromDate) & (
+    #                                             quotes.XprtnDt <= parm.ToDate)].unique())
+    # strikes = sorted(quotes.ExrcPric[(quotes.Asst == parm.Asset) & (quotes.ExrcPric >= parm.FromStrike) & (
+    #         quotes.ExrcPric <= parm.ToStrike) & (quotes.XprtnDt >= parm.FromDate) & (
+    #                                          quotes.XprtnDt <= parm.ToDate)].unique())
     tabela = [[parm.Asset] + vencimentos]
     for st in strikes:
         linha = [st]
         for i in range(1, len(tabela[0])):
-            op = quotes[['TckrSymb', 'Last']][
-                (quotes.Last > 0) & (quotes.Asst == parm.Asset) & (quotes.ExrcPric == st) & (
-                            quotes.colHead == tabela[0][i])].values
+            op = df[['TckrSymb', 'Last']][(df.ExrcPric == st) & (df.colHead == tabela[0][i])].values
+            # op = quotes[['TckrSymb', 'Last']][
+            #     (quotes.Asst == parm.Asset) & (quotes.ExrcPric == st) & (
+            #             quotes.colHead == tabela[0][i])].values
             if op.any():
                 tpl = tuple([op[0][0][4:], round(op[0][1], 2)])
                 linha.append(tpl)
@@ -31,17 +37,16 @@ for parm in params.itertuples():
         tabela.append(linha)
     tabs[parm.Asset] = tabela
 
-txt = ''
-for k in tabs.keys():
-    tabela = tabs[k]
-    df = pd.DataFrame(tabela[1:], columns=tabela[0])
-    txt += '\n\n' + df.to_string()
-    # print(df)
-# print(txt)
-
-
 with open('texte.txt', 'w') as f:
-    f.write(txt)
+    txt = ''
+    for k in tabs.keys():
+        tabela = tabs[k]
+        h = last_quote_asset[tabela[0][0]]
+        f.write(f' {tabela[0][0]} : {h[0]:.2f} ({h[1]:.2f}%)\n\n')
+        df = pd.DataFrame(tabela[1:], columns=tabela[0])
+        txt = df.to_string(index=False).replace('(', ' ').replace(')', ' ')
+        f.write(txt)
+        f.write('\n\n\n')
 
 # with open('series_cotacoes.txt', 'w') as f:
 #     for asset in tabs.keys():
