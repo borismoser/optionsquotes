@@ -7,9 +7,10 @@ import shutil
 
 data = pd.read_csv("series_autorizadas.csv", decimal=',',
                    low_memory=False, encoding='ANSI', delimiter=';', header=1)
-data2 = data[['TckrSymb', 'Asst', 'XprtnDt', 'OptnTp', 'ExrcPric', 'OptnStyle']][
+
+data = data[['TckrSymb', 'Asst', 'XprtnDt', 'OptnTp', 'ExrcPric', 'OptnStyle']][
     data['Asst'].isin(['BBDC4', 'BOVA11', 'PETR4']) & data['SgmtNm'].isin(['EQUITY CALL', 'EQUITY PUT'])]
-data2.to_csv('series_autorizadas_filtradas.csv', sep=';', encoding='ANSI', index=False)
+data.to_csv('series_autorizadas_filtradas.csv', sep=';', encoding='ANSI', index=False)
 
 db = xl.readcsv('series_autorizadas_filtradas.csv', delimiter=';', ws='Select')
 ws = db.ws('Select')
@@ -23,7 +24,7 @@ for r in range(2, xrows + 1):
     ws.update_address(address=f'G{r}', val=f'RTD("rtdtrading.rtdserver";;"{tck}_B_0"; "ULT")')
 
 if Path('series_autorizadas_cotacoes.xlsx').exists():
-    shutil.copy('series_autorizadas_cotacoes.xlsx',
+    shutil.move('series_autorizadas_cotacoes.xlsx',
                 f'series_autorizadas_cotacoes_{datetime.now():%Y-%m-%d_%H-%M-%S}.xlsx')
 
-# xl.writexl(db=db, fn='series_autorizadas_cotacoes.xlsx')
+xl.writexl(db=db, fn='series_autorizadas_cotacoes.xlsx')
