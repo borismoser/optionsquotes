@@ -30,11 +30,11 @@ def txt_from_tabs():
             indicador = False
             for x in tabela[1:]:
                 # Marcador da última cotação do ativo
-                if not indicador and float(x[0]) >= round(lastq,2):
-                    lin = f'{lastq:6.2f} ' + ('.' * (len(lin)-7))
-                    # lin += '.' * (len(lin)-8)
-                    f.write(lin + '\n')
-                    indicador = True
+                if not indicador:
+                    if float(x[0]) <= round(lastq, 2):
+                        lin = f'{lastq:6.2f} ' + ('.' * (len(lin)-7))
+                        f.write(lin + '\n')
+                        indicador = True
                 # Strike da linha atual
                 lin = f'{x[0]:6.2f} '
                 # Códigos e últimas cotações das opções do strike atual
@@ -76,7 +76,7 @@ def generate_datasets():
                 quotes.ExrcPric <= parm.ToStrike) & (quotes.XprtnDt.astype(str) >= parm.FromDate) & (
                             quotes.XprtnDt.astype(str) <= parm.ToDate)]
         vencimentos = sorted(df.colHead.unique())
-        strikes = sorted(df.ExrcPric.unique())
+        strikes = sorted(df.ExrcPric.unique(), reverse=True)
         tabela = [[parm.Asset] + vencimentos]
         for st in strikes:
             linha = [st]
